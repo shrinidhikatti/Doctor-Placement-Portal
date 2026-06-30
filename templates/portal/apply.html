@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% load form_tags %}
+
+{% block title %}Apply — Doctor Placement Portal, Belagavi{% endblock %}
+
+{% block content %}
+<div class="portal-card card shadow-sm">
+  <div class="card-body p-4">
+    <h1 class="h4 mb-1">Application for Doctor Posting</h1>
+    <p class="text-muted mb-4" style="font-size:.9rem">
+      Belagavi District &mdash; CHC / PHC Placement 2026.
+      Fill in all required fields and submit once.
+    </p>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" novalidate autocomplete="off">
+      {% csrf_token %}
+
+      {# ── Personal details ───────────────────────────────────────── #}
+      <p class="section-heading">Personal Details</p>
+      <div class="row g-3">
+        <div class="col-sm-4">
+          {% include "portal/_field.html" with field=form.first_name %}
+        </div>
+        <div class="col-sm-4">
+          {% include "portal/_field.html" with field=form.father_name %}
+        </div>
+        <div class="col-sm-4">
+          {% include "portal/_field.html" with field=form.last_name %}
+        </div>
+        <div class="col-sm-6">
+          {% include "portal/_field.html" with field=form.dob %}
+        </div>
+        <div class="col-sm-6">
+          {% include "portal/_field.html" with field=form.phone %}
+        </div>
+        <div class="col-12">
+          {% include "portal/_field.html" with field=form.email %}
+        </div>
+        <div class="col-12">
+          {% include "portal/_field.html" with field=form.address %}
+        </div>
+      </div>
+
+      {# ── Education ──────────────────────────────────────────────── #}
+      <p class="section-heading">Education</p>
+      <div class="row g-3">
+        <div class="col-sm-5">
+          {% include "portal/_field.html" with field=form.ug_qualification %}
+        </div>
+        <div class="col-sm-4">
+          {% include "portal/_field.html" with field=form.ug_score %}
+        </div>
+        <div class="col-sm-3">
+          {% include "portal/_field.html" with field=form.score_type %}
+        </div>
+        <div class="col-12">
+          {% include "portal/_field.html" with field=form.higher_qualification %}
+        </div>
+      </div>
+
+      {# ── Facility preferences ───────────────────────────────────── #}
+      <p class="section-heading">Facility Preferences</p>
+
+      {# District is fixed — display only #}
+      <div class="mb-3">
+        <label class="form-label fw-semibold">District</label>
+        <input class="form-control district-badge" value="Belagavi" disabled>
+      </div>
+
+      <div class="mb-3">
+        <label for="{{ form.taluka.id_for_label }}" class="form-label fw-semibold">
+          Taluka <span class="text-danger">*</span>
+        </label>
+        {% if form.taluka.errors %}
+          {{ form.taluka|add_class:"form-select is-invalid" }}
+          <div class="invalid-feedback d-block">{{ form.taluka.errors.0 }}</div>
+        {% else %}
+          {{ form.taluka|add_class:"form-select" }}
+        {% endif %}
+        <div class="form-text">Select a taluka to load available facilities.</div>
+      </div>
+
+      <div id="preference-section" class="{% if not form.taluka.value %}d-none{% endif %}">
+        <div class="alert alert-info py-2 mb-3" style="font-size:.85rem">
+          Vacancies shown are sanctioned seats. Multiple applicants may choose the same facility.
+        </div>
+        <div class="row g-3">
+          <div class="col-12">
+            <label for="{{ form.priority_1.id_for_label }}" class="form-label fw-semibold">
+              Priority 1 <span class="text-danger">*</span>
+            </label>
+            {% if form.priority_1.errors %}
+              {{ form.priority_1|add_class:"form-select is-invalid" }}
+              <div class="invalid-feedback d-block">{{ form.priority_1.errors.0 }}</div>
+            {% else %}
+              {{ form.priority_1|add_class:"form-select" }}
+            {% endif %}
+          </div>
+          <div class="col-12">
+            <label for="{{ form.priority_2.id_for_label }}" class="form-label fw-semibold">
+              Priority 2 <span class="text-danger">*</span>
+            </label>
+            {% if form.priority_2.errors %}
+              {{ form.priority_2|add_class:"form-select is-invalid" }}
+              <div class="invalid-feedback d-block">{{ form.priority_2.errors.0 }}</div>
+            {% else %}
+              {{ form.priority_2|add_class:"form-select" }}
+            {% endif %}
+          </div>
+          <div class="col-12">
+            <label for="{{ form.priority_3.id_for_label }}" class="form-label fw-semibold">
+              Priority 3 <span class="text-danger">*</span>
+            </label>
+            {% if form.priority_3.errors %}
+              {{ form.priority_3|add_class:"form-select is-invalid" }}
+              <div class="invalid-feedback d-block">{{ form.priority_3.errors.0 }}</div>
+            {% else %}
+              {{ form.priority_3|add_class:"form-select" }}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div id="no-taluka-msg" class="text-muted mb-3 {% if form.taluka.value %}d-none{% endif %}"
+           style="font-size:.9rem">
+        Please select a taluka above to choose your preferred facilities.
+      </div>
+
+      <div class="mt-4 d-grid">
+        <button type="submit" class="btn btn-primary btn-lg">
+          Submit Application
+        </button>
+      </div>
+      <p class="text-muted mt-2 text-center" style="font-size:.8rem">
+        Once submitted, your application cannot be edited.
+        Keep your reference number after submission.
+      </p>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const talukaEl   = document.getElementById("{{ form.taluka.id_for_label }}");
+  const p1El       = document.getElementById("{{ form.priority_1.id_for_label }}");
+  const p2El       = document.getElementById("{{ form.priority_2.id_for_label }}");
+  const p3El       = document.getElementById("{{ form.priority_3.id_for_label }}");
+  const section    = document.getElementById("preference-section");
+  const noTaluka   = document.getElementById("no-taluka-msg");
+
+  function buildOption(id, label) {
+    const o = document.createElement("option");
+    o.value = id;
+    o.textContent = label;
+    return o;
+  }
+
+  function populateDropdowns(facilities) {
+    [p1El, p2El, p3El].forEach(el => {
+      const current = el.value;
+      el.innerHTML = "";
+      el.appendChild(buildOption("", "— Select facility —"));
+      facilities.forEach(f => {
+        const label = `${f.name} (${f.type}) — ${f.sanctioned_vacancies} vacancy`;
+        const opt = buildOption(f.id, label);
+        if (String(f.id) === current) opt.selected = true;
+        el.appendChild(opt);
+      });
+    });
+    section.classList.remove("d-none");
+    noTaluka.classList.add("d-none");
+  }
+
+  function clearDropdowns() {
+    [p1El, p2El, p3El].forEach(el => {
+      el.innerHTML = '<option value="">— Select facility —</option>';
+    });
+    section.classList.add("d-none");
+    noTaluka.classList.remove("d-none");
+  }
+
+  talukaEl.addEventListener("change", function () {
+    const talukaId = this.value;
+    if (!talukaId) { clearDropdowns(); return; }
+
+    fetch(`/api/facilities/?taluka=${talukaId}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.facilities.length === 0) {
+          clearDropdowns();
+          noTaluka.textContent = "No facilities found for this taluka.";
+          noTaluka.classList.remove("d-none");
+        } else {
+          populateDropdowns(data.facilities);
+        }
+      })
+      .catch(() => {
+        clearDropdowns();
+        noTaluka.textContent = "Could not load facilities. Please try again.";
+        noTaluka.classList.remove("d-none");
+      });
+  });
+
+  // On validation error, the page reloads with POST data — re-trigger the
+  // taluka change so the saved priority values are still selectable.
+  {% if form.taluka.value %}
+  (function rehydrate() {
+    fetch(`/api/facilities/?taluka={{ form.taluka.value }}`)
+      .then(r => r.json())
+      .then(data => { if (data.facilities.length) populateDropdowns(data.facilities); })
+      .catch(() => {});
+  })();
+  {% endif %}
+})();
+</script>
+{% endblock %}

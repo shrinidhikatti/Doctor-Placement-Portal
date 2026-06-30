@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Application Submitted — Doctor Placement Portal{% endblock %}
+
+{% block content %}
+<div class="portal-card">
+  <div class="card shadow-sm border-success">
+    <div class="card-body p-4 text-center">
+      <div class="mb-3" style="font-size:3rem; color:#198754;">&#10003;</div>
+      <h1 class="h4 text-success mb-1">Application Submitted Successfully</h1>
+      <p class="text-muted mb-4">Your application has been received.</p>
+
+      <div class="alert alert-success d-inline-block px-5 py-3 mb-4">
+        <div class="text-muted" style="font-size:.8rem; letter-spacing:.05em;">REFERENCE NUMBER</div>
+        <div class="fw-bold fs-3">{{ applicant.reference_number }}</div>
+        <div class="text-muted" style="font-size:.8rem;">Please save this number for your records.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mt-3">
+    <div class="card-body p-4">
+      <h2 class="h6 mb-3 text-muted text-uppercase" style="letter-spacing:.05em;">Application Summary</h2>
+
+      <dl class="row mb-0">
+        <dt class="col-sm-4">Name</dt>
+        <dd class="col-sm-8">{{ applicant.first_name }} {{ applicant.father_name }} {{ applicant.last_name }}</dd>
+
+        <dt class="col-sm-4">Date of Birth</dt>
+        <dd class="col-sm-8">{{ applicant.dob }}</dd>
+
+        <dt class="col-sm-4">Email</dt>
+        <dd class="col-sm-8">{{ applicant.email }}</dd>
+
+        <dt class="col-sm-4">Phone</dt>
+        <dd class="col-sm-8">{{ applicant.phone }}</dd>
+
+        <dt class="col-sm-4">UG Qualification</dt>
+        <dd class="col-sm-8">{{ applicant.ug_qualification }}</dd>
+
+        <dt class="col-sm-4">Score</dt>
+        <dd class="col-sm-8">{{ applicant.ug_score }} ({{ applicant.get_score_type_display }})</dd>
+
+        {% if applicant.higher_qualification %}
+        <dt class="col-sm-4">Higher Qualification</dt>
+        <dd class="col-sm-8">{{ applicant.higher_qualification }}</dd>
+        {% endif %}
+      </dl>
+
+      <hr>
+      <h2 class="h6 mb-3 text-muted text-uppercase" style="letter-spacing:.05em;">Facility Preferences</h2>
+      <ol class="mb-0">
+        {% for pref in applicant.preferences.all %}
+        <li class="mb-1">
+          <strong>{{ pref.facility.name }}</strong>
+          <span class="badge bg-secondary">{{ pref.facility.type }}</span>
+          &mdash; {{ pref.facility.taluka.name }}
+          <span class="text-muted">({{ pref.facility.sanctioned_vacancies }} sanctioned vacancy)</span>
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+
+  <p class="text-center text-muted mt-3" style="font-size:.85rem;">
+    Applications cannot be edited after submission.
+    Contact the District Health Office, Belagavi for any corrections.
+  </p>
+</div>
+{% endblock %}
