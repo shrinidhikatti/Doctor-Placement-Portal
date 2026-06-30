@@ -6,41 +6,31 @@ from .models import Applicant, Facility, Preference, Taluka
 
 
 class ApplicantForm(forms.ModelForm):
-    # Priority dropdowns — unpopulated at load time, filled via AJAX on taluka change.
-    taluka = forms.ModelChoiceField(
-        queryset=Taluka.objects.all(),
-        empty_label="— Select taluka —",
-        label="Taluka",
+    # Each priority has its own taluka selector that independently filters its facility list.
+    taluka_1 = forms.ModelChoiceField(
+        queryset=Taluka.objects.all(), empty_label="— Select taluka —", label="Taluka"
     )
     priority_1 = forms.ModelChoiceField(
-        queryset=Facility.objects.none(),
-        empty_label="— Select facility —",
-        label="Priority 1",
+        queryset=Facility.objects.none(), empty_label="— Select facility —", label="Facility"
+    )
+    taluka_2 = forms.ModelChoiceField(
+        queryset=Taluka.objects.all(), empty_label="— Select taluka —", label="Taluka"
     )
     priority_2 = forms.ModelChoiceField(
-        queryset=Facility.objects.none(),
-        empty_label="— Select facility —",
-        label="Priority 2",
+        queryset=Facility.objects.none(), empty_label="— Select facility —", label="Facility"
+    )
+    taluka_3 = forms.ModelChoiceField(
+        queryset=Taluka.objects.all(), empty_label="— Select taluka —", label="Taluka"
     )
     priority_3 = forms.ModelChoiceField(
-        queryset=Facility.objects.none(),
-        empty_label="— Select facility —",
-        label="Priority 3",
+        queryset=Facility.objects.none(), empty_label="— Select facility —", label="Facility"
     )
 
     class Meta:
         model = Applicant
         fields = [
-            "first_name",
-            "father_name",
-            "last_name",
-            "dob",
-            "address",
-            "email",
-            "phone",
-            "ug_qualification",
-            "ug_score",
-            "score_type",
+            "first_name", "father_name", "last_name", "dob", "address",
+            "email", "phone", "ug_qualification", "ug_score", "score_type",
             "higher_qualification",
         ]
         widgets = {
@@ -51,17 +41,20 @@ class ApplicantForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # If the form is submitted, populate priority dropdowns with facilities
-        # from the submitted taluka so validation can resolve the FK values.
-        if "taluka" in self.data:
-            try:
-                taluka_id = int(self.data["taluka"])
-                qs = Facility.objects.filter(taluka_id=taluka_id).select_related("taluka")
-                self.fields["priority_1"].queryset = qs
-                self.fields["priority_2"].queryset = qs
-                self.fields["priority_3"].queryset = qs
-            except (ValueError, TypeError):
-                pass
+        # On POST (including validation-error re-render), populate each priority's
+        # facility queryset from its own submitted taluka so FK validation works.
+        for i in (1, 2, 3):
+            taluka_key = f"taluka_{i}"
+            priority_key = f"priority_{i}"
+            if taluka_key in self.data:
+                try:
+                    taluka_id = int(self.data[taluka_key])
+                    self.fields[priority_key].queryset = (
+                        Facility.objects.filter(taluka_id=taluka_id)
+                        .select_related("taluka")
+                    )
+                except (ValueError, TypeError):
+                    pass
 
         self.fields["ug_qualification"].empty_label = "— Select qualification —"
         self.fields["higher_qualification"].required = False
@@ -69,17 +62,13 @@ class ApplicantForm(forms.ModelForm):
     def clean_email(self):
         email = self.cleaned_data["email"]
         if Applicant.objects.filter(email__iexact=email).exists():
-            raise ValidationError(
-                "An application with this email address already exists."
-            )
+            raise ValidationError("An application with this email address already exists.")
         return email
 
     def clean_phone(self):
         phone = self.cleaned_data["phone"]
         if Applicant.objects.filter(phone=phone).exists():
-            raise ValidationError(
-                "An application with this phone number already exists."
-            )
+            raise ValidationError("An application with this phone number already exists.")
         return phone
 
     def clean(self):
@@ -90,7 +79,6 @@ class ApplicantForm(forms.ModelForm):
 
         facilities = [f for f in (p1, p2, p3) if f is not None]
         if len(facilities) < 3:
-            # Individual field errors already raised; skip cross-field check.
             return cleaned
 
         if len(set(f.pk for f in facilities)) < 3:
@@ -106,16 +94,12 @@ class ApplicantForm(forms.ModelForm):
         if commit:
             applicant.save()
             for priority, facility in enumerate(
-                [
-                    self.cleaned_data["priority_1"],
-                    self.cleaned_data["priority_2"],
-                    self.cleaned_data["priority_3"],
-                ],
+                [self.cleaned_data["priority_1"],
+                 self.cleaned_data["priority_2"],
+                 self.cleaned_data["priority_3"]],
                 start=1,
             ):
                 Preference.objects.create(
-                    applicant=applicant,
-                    priority=priority,
-                    facility=facility,
+                    applicant=applicant, priority=priority, facility=facility
                 )
         return applicant

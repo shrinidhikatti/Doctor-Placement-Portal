@@ -19,7 +19,18 @@ def apply(request):
             return render(request, "portal/confirmation.html", {"applicant": applicant})
     else:
         form = ApplicantForm()
-    return render(request, "portal/apply.html", {"form": form})
+
+    # Build slot descriptors so the template can iterate over the three priorities.
+    priority_slots = [
+        {
+            "num": i,
+            "taluka_field": form[f"taluka_{i}"],
+            "priority_field": form[f"priority_{i}"],
+            "has_error": bool(form[f"taluka_{i}"].errors or form[f"priority_{i}"].errors),
+        }
+        for i in (1, 2, 3)
+    ]
+    return render(request, "portal/apply.html", {"form": form, "priority_slots": priority_slots})
 
 
 @staff_member_required

@@ -45,9 +45,11 @@ def valid_post(taluka, qual, f1, f2, f3, **overrides):
         "ug_score": "75.50",
         "score_type": "PERCENTAGE",
         "higher_qualification": "",
-        "taluka": taluka.pk,
+        "taluka_1": taluka.pk,
         "priority_1": f1.pk,
+        "taluka_2": taluka.pk,
         "priority_2": f2.pk,
+        "taluka_3": taluka.pk,
         "priority_3": f3.pk,
     }
     data.update(overrides)
@@ -73,7 +75,7 @@ class ApplyViewTests(TestCase):
         data = valid_post(self.taluka, self.qual, self.f1, self.f2, self.f3)
         r = self.client.post(self.url, data)
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, "Application Submitted Successfully")
+        self.assertContains(r, "successfully submitted")
         self.assertEqual(Applicant.objects.count(), 1)
         self.assertEqual(Preference.objects.count(), 3)
 
