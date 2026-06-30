@@ -26,7 +26,9 @@ DEBUG = config("DEBUG", default=True, cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv())
 
 # Hosts allowed for CSRF (needed once deployed behind HTTPS on Render/Railway).
-CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
+# e.g. CSRF_TRUSTED_ORIGINS=https://your-app.onrender.com
+_csrf_raw = config("CSRF_TRUSTED_ORIGINS", default="")
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_raw.split(",") if o.strip()]
 
 
 # Application definition
