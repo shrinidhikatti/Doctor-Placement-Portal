@@ -5,16 +5,33 @@
 {% block content %}
 <div class="portal-card">
   <div class="card shadow-sm border-success">
-    <div class="card-body p-4 text-center">
-      <div class="mb-3" style="font-size:3rem; color:#198754;">&#10003;</div>
-      <h1 class="h4 text-success mb-1">Application Submitted Successfully</h1>
-      <p class="text-muted mb-4">Your application has been received.</p>
+    <div class="card-body p-4">
+      <div class="text-center mb-3" style="font-size:2.5rem; color:#198754;">&#10003;</div>
 
-      <div class="alert alert-success d-inline-block px-5 py-3 mb-4">
-        <div class="text-muted" style="font-size:.8rem; letter-spacing:.05em;">REFERENCE NUMBER</div>
-        <div class="fw-bold fs-3">{{ applicant.reference_number }}</div>
-        <div class="text-muted" style="font-size:.8rem;">Please save this number for your records.</div>
+      {% with pref1=applicant.preferences.all.0 %}
+      <p class="fs-6 mb-3">
+        Dear <strong>Dr. {{ applicant.first_name }} {{ applicant.last_name }}</strong>,
+      </p>
+      <p class="mb-4" style="line-height:1.7;">
+        Your application for the appointment of
+        <strong>Dr. {{ applicant.first_name }} {{ applicant.father_name }} {{ applicant.last_name }}</strong>
+        at the
+        <strong>{{ pref1.facility.type }}s of {{ pref1.facility.taluka.name }} Taluka</strong>,
+        Belagavi District has been <span class="text-success fw-semibold">successfully submitted</span>.
+      </p>
+      {% endwith %}
+
+      <div class="alert alert-success text-center py-3 mb-2">
+        <div class="text-muted" style="font-size:.75rem; letter-spacing:.08em; text-transform:uppercase;">Reference Number</div>
+        <div class="fw-bold fs-2 my-1">{{ applicant.reference_number }}</div>
+        <div style="font-size:.85rem;">
+          Please note this reference number. The DHO / CEO will use it to track your application.
+        </div>
       </div>
+
+      <p class="text-muted text-center mb-0" style="font-size:.8rem;">
+        Submitted on {{ applicant.created_at|date:"d F Y, h:i A" }} IST
+      </p>
     </div>
   </div>
 
