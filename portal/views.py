@@ -4,7 +4,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Count, F as models_F, Q
 from django.db.models.functions import TruncDate
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET
 
 from .forms import ApplicantForm
@@ -31,6 +31,14 @@ def apply(request):
         for i in (1, 2, 3)
     ]
     return render(request, "portal/apply.html", {"form": form, "priority_slots": priority_slots})
+
+
+def acknowledgement_print(request, pk):
+    applicant = get_object_or_404(
+        Applicant.objects.prefetch_related("preferences__facility__taluka"),
+        pk=pk,
+    )
+    return render(request, "portal/acknowledgement_print.html", {"applicant": applicant})
 
 
 @staff_member_required

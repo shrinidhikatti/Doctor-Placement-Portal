@@ -4,72 +4,166 @@
 {% block title %}Apply — Doctor Placement Portal, Belagavi{% endblock %}
 
 {% block content %}
-<div class="portal-card card shadow-sm">
-  <div class="card-body p-4">
-    <h1 class="h4 mb-1">Application for Doctor Posting</h1>
-    <p class="text-muted mb-4" style="font-size:.9rem">
-      Belagavi District &mdash; CHC / PHC Placement 2026.
-      Fill in all required fields and submit once.
-    </p>
+
+{# ── 3-step progress tracker ────────────────────────────── #}
+<div style="display:flex;align-items:center;gap:0;margin-bottom:1.5rem;">
+  <div class="form-step-item" id="step-personal">
+    <div class="step-pip step-pip-active">1</div>
+    <span class="step-lbl step-lbl-active">Personal</span>
+  </div>
+  <div class="step-line" id="line-1"></div>
+  <div class="form-step-item" id="step-education">
+    <div class="step-pip">2</div>
+    <span class="step-lbl">Education</span>
+  </div>
+  <div class="step-line" id="line-2"></div>
+  <div class="form-step-item" id="step-preferences">
+    <div class="step-pip">3</div>
+    <span class="step-lbl">Preferences</span>
+  </div>
+</div>
+
+<style>
+  .form-step-item { display:flex; align-items:center; gap:7px; white-space:nowrap; }
+  .step-pip {
+    width:28px; height:28px; border-radius:50%;
+    background:var(--border); color:var(--ink-4);
+    font-size:.78rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    transition:all .3s;
+  }
+  .step-pip-active { background:var(--g-700); color:#fff; box-shadow:0 0 0 4px rgba(21,94,71,.15); }
+  .step-pip-done   { background:var(--g-500); color:#fff; }
+  .step-lbl { font-size:.75rem; font-weight:600; color:var(--ink-4); letter-spacing:.04em; text-transform:uppercase; transition:color .3s; }
+  .step-lbl-active { color:var(--g-700); }
+  .step-lbl-done   { color:var(--g-500); }
+  .step-line { flex:1; height:2px; background:var(--border); margin:0 8px; border-radius:1px; transition:background .3s; min-width:20px; }
+  .step-line-done { background:var(--g-500); }
+</style>
+
+{# ── Form card ──────────────────────────────────────────── #}
+<div style="background:var(--white);border:1px solid var(--border-lt);border-radius:var(--radius-lg);box-shadow:var(--shadow);">
+
+  {# Card header #}
+  <div style="background:linear-gradient(135deg,var(--g-900) 0%,var(--g-700) 100%);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:1.5rem 2rem;color:#fff;">
+    <h1 style="font-family:'Noto Serif',Georgia,serif;font-size:1.2rem;font-weight:700;margin:0 0 .2rem;">Application for Doctor Posting</h1>
+    <p style="font-size:.82rem;color:var(--g-200);margin:0;">Belagavi District &mdash; CHC / PHC Placement 2026 &middot; Fill all fields and submit once</p>
+  </div>
+
+  <div style="padding:1.75rem 2rem;">
 
     {% if form.non_field_errors %}
-      <div class="alert alert-danger">
-        {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
-      </div>
+    <div style="background:#FEF2F2;border:1px solid #FCA5A5;border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:1.25rem;font-size:.85rem;color:#991B1B;">
+      {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+    </div>
     {% endif %}
 
     <form method="post" novalidate autocomplete="off">
       {% csrf_token %}
 
-      {# ── Personal details ───────────────────────────────────────── #}
-      <p class="section-heading">Personal Details</p>
-      <div class="row g-3">
-        <div class="col-sm-4">{% include "portal/_field.html" with field=form.first_name %}</div>
-        <div class="col-sm-4">{% include "portal/_field.html" with field=form.father_name %}</div>
-        <div class="col-sm-4">{% include "portal/_field.html" with field=form.last_name %}</div>
-        <div class="col-sm-6">{% include "portal/_field.html" with field=form.dob %}</div>
-        <div class="col-sm-6">{% include "portal/_field.html" with field=form.phone %}</div>
-        <div class="col-12">{% include "portal/_field.html" with field=form.email %}</div>
-        <div class="col-12">{% include "portal/_field.html" with field=form.address %}</div>
-      </div>
-
-      {# ── Education ──────────────────────────────────────────────── #}
-      <p class="section-heading">Education</p>
-      <div class="row g-3">
-        <div class="col-sm-5">{% include "portal/_field.html" with field=form.ug_qualification %}</div>
-        <div class="col-sm-4">{% include "portal/_field.html" with field=form.ug_score %}</div>
-        <div class="col-sm-3">{% include "portal/_field.html" with field=form.score_type %}</div>
-        <div class="col-12">{% include "portal/_field.html" with field=form.higher_qualification %}</div>
-      </div>
-
-      {# ── Facility preferences ───────────────────────────────────── #}
-      <p class="section-heading">Facility Preferences</p>
-
-      <div class="mb-3">
-        <label class="form-label fw-semibold">District</label>
-        <input class="form-control" value="Belagavi" disabled>
-      </div>
-
-      <div class="alert alert-info py-2 mb-3" style="font-size:.85rem">
-        Each priority can be from a different taluka.
-        Vacancies shown are sanctioned seats &mdash; multiple applicants may choose the same facility.
-      </div>
-
-      {# Macro: one priority block — repeated 3 times #}
-      {% for slot in priority_slots %}
-      <div class="card mb-3 {% if slot.has_error %}border-danger{% else %}border-light{% endif %}">
-        <div class="card-header fw-semibold py-2
-                    {% if slot.num == 1 %}bg-primary text-white
-                    {% elif slot.num == 2 %}bg-secondary text-white
-                    {% else %}bg-dark text-white{% endif %}">
-          Priority {{ slot.num }}
+      {# ── Section 1: Personal ──────────────────────────── #}
+      <div id="sec-personal">
+        <div class="section-head">
+          <span class="section-tag">Personal Details</span>
+          <span class="section-rule"></span>
         </div>
-        <div class="card-body pb-2">
-          <div class="row g-2 align-items-end">
-            <div class="col-sm-5">
-              <label class="form-label fw-semibold mb-1">
-                Taluka <span class="{% if slot.num == 1 %}text-warning{% else %}text-danger{% endif %}">*</span>
-              </label>
+        <div class="row g-3">
+          <div class="col-sm-4">
+            <label class="form-label">First Name <span style="color:var(--amber)">*</span></label>
+            {% if form.first_name.errors %}{{ form.first_name|add_class:"form-control is-invalid" }}<div class="invalid-feedback">{{ form.first_name.errors.0 }}</div>
+            {% else %}{{ form.first_name|add_class:"form-control" }}{% endif %}
+          </div>
+          <div class="col-sm-4">
+            <label class="form-label">Father's Name <span style="color:var(--amber)">*</span></label>
+            {% if form.father_name.errors %}{{ form.father_name|add_class:"form-control is-invalid" }}<div class="invalid-feedback">{{ form.father_name.errors.0 }}</div>
+            {% else %}{{ form.father_name|add_class:"form-control" }}{% endif %}
+          </div>
+          <div class="col-sm-4">
+            <label class="form-label">Last Name <span style="color:var(--amber)">*</span></label>
+            {% if form.last_name.errors %}{{ form.last_name|add_class:"form-control is-invalid" }}<div class="invalid-feedback">{{ form.last_name.errors.0 }}</div>
+            {% else %}{{ form.last_name|add_class:"form-control" }}{% endif %}
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Date of Birth <span style="color:var(--amber)">*</span></label>
+            {% if form.dob.errors %}{{ form.dob|add_class:"form-control is-invalid" }}<div class="invalid-feedback">{{ form.dob.errors.0 }}</div>
+            {% else %}{{ form.dob|add_class:"form-control" }}{% endif %}
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Phone Number <span style="color:var(--amber)">*</span></label>
+            {% if form.phone.errors %}{{ form.phone|add_class:"form-control is-invalid" }}<div class="invalid-feedback">{{ form.phone.errors.0 }}</div>
+            {% else %}{{ form.phone|add_class:"form-control" }}{% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Email Address <span style="color:var(--amber)">*</span></label>
+            {% if form.email.errors %}{{ form.email|add_class:"form-control is-invalid" }}<div class="invalid-feedback">{{ form.email.errors.0 }}</div>
+            {% else %}{{ form.email|add_class:"form-control" }}{% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Correspondence Address <span style="color:var(--amber)">*</span></label>
+            {% if form.address.errors %}{{ form.address|add_class:"form-control is-invalid" }}<div class="invalid-feedback">{{ form.address.errors.0 }}</div>
+            {% else %}<textarea name="{{ form.address.html_name }}" id="{{ form.address.id_for_label }}" class="form-control" rows="2">{{ form.address.value|default:'' }}</textarea>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      {# ── Section 2: Education ─────────────────────────── #}
+      <div id="sec-education">
+        <div class="section-head">
+          <span class="section-tag">Education</span>
+          <span class="section-rule"></span>
+        </div>
+        <div class="row g-3">
+          <div class="col-sm-5">
+            <label class="form-label">UG Qualification <span style="color:var(--amber)">*</span></label>
+            {% if form.ug_qualification.errors %}{{ form.ug_qualification|add_class:"form-select is-invalid" }}<div class="invalid-feedback">{{ form.ug_qualification.errors.0 }}</div>
+            {% else %}{{ form.ug_qualification|add_class:"form-select" }}{% endif %}
+          </div>
+          <div class="col-sm-4">
+            <label class="form-label">Score <span style="color:var(--amber)">*</span></label>
+            {% if form.ug_score.errors %}{{ form.ug_score|add_class:"form-control is-invalid" }}<div class="invalid-feedback">{{ form.ug_score.errors.0 }}</div>
+            {% else %}{{ form.ug_score|add_class:"form-control" }}{% endif %}
+          </div>
+          <div class="col-sm-3">
+            <label class="form-label">Type <span style="color:var(--amber)">*</span></label>
+            {% if form.score_type.errors %}{{ form.score_type|add_class:"form-select is-invalid" }}<div class="invalid-feedback">{{ form.score_type.errors.0 }}</div>
+            {% else %}{{ form.score_type|add_class:"form-select" }}{% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Higher Qualification <span style="color:var(--ink-4);font-weight:400;">(optional)</span></label>
+            {{ form.higher_qualification|add_class:"form-control" }}
+          </div>
+        </div>
+      </div>
+
+      {# ── Section 3: Preferences ───────────────────────── #}
+      <div id="sec-preferences">
+        <div class="section-head">
+          <span class="section-tag">Facility Preferences</span>
+          <span class="section-rule"></span>
+        </div>
+
+        <div style="margin-bottom:.85rem;">
+          <span class="district-pill">&#128205; District: Belagavi</span>
+        </div>
+
+        <div class="form-hint">
+          <span style="flex-shrink:0;">&#9432;</span>
+          <span>Select a taluka for each priority — they can be different talukas.
+          Vacancies shown are sanctioned seats; multiple applicants may choose the same facility.</span>
+        </div>
+
+        {% for slot in priority_slots %}
+        <div class="priority-card {% if slot.has_error %}has-error{% endif %}">
+          <div class="priority-header">
+            <div class="p-badge p-badge-{{ slot.num }}">{{ slot.num }}</div>
+            <span class="p-title">
+              {% if slot.num == 1 %}First Choice{% elif slot.num == 2 %}Second Choice{% else %}Third Choice{% endif %}
+            </span>
+            <span class="p-subtitle">Priority {{ slot.num }}</span>
+          </div>
+          <div class="priority-body">
+            <div>
+              <label class="form-label">Taluka <span style="color:var(--amber)">*</span></label>
               {% if slot.taluka_field.errors %}
                 {{ slot.taluka_field|add_class:"form-select is-invalid" }}
                 <div class="invalid-feedback">{{ slot.taluka_field.errors.0 }}</div>
@@ -77,10 +171,8 @@
                 {{ slot.taluka_field|add_class:"form-select" }}
               {% endif %}
             </div>
-            <div class="col-sm-7">
-              <label class="form-label fw-semibold mb-1">
-                Facility <span class="{% if slot.num == 1 %}text-warning{% else %}text-danger{% endif %}">*</span>
-              </label>
+            <div>
+              <label class="form-label">Facility <span style="color:var(--amber)">*</span></label>
               {% if slot.priority_field.errors %}
                 {{ slot.priority_field|add_class:"form-select is-invalid" }}
                 <div class="invalid-feedback">{{ slot.priority_field.errors.0 }}</div>
@@ -90,16 +182,16 @@
             </div>
           </div>
         </div>
+        {% endfor %}
       </div>
-      {% endfor %}
 
-      <div class="mt-4 d-grid">
-        <button type="submit" class="btn btn-primary btn-lg">Submit Application</button>
+      {# ── Submit ───────────────────────────────────────── #}
+      <div style="margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid var(--border-lt);">
+        <button type="submit" class="btn-submit">Submit Application</button>
+        <p style="text-align:center;color:var(--ink-4);font-size:.76rem;margin-top:.6rem;">
+          Once submitted, your application cannot be edited. Save your reference number after submission.
+        </p>
       </div>
-      <p class="text-muted mt-2 text-center" style="font-size:.8rem">
-        Once submitted, your application cannot be edited.
-        Keep your reference number after submission.
-      </p>
     </form>
   </div>
 </div>
@@ -108,61 +200,84 @@
 {% block extra_js %}
 <script>
 (function () {
+  // ── Step progress tracker ────────────────────────────
+  const sections = [
+    { id: 'sec-personal',    step: 'step-personal',    line: null },
+    { id: 'sec-education',   step: 'step-education',   line: 'line-1' },
+    { id: 'sec-preferences', step: 'step-preferences', line: 'line-2' },
+  ];
+
+  function activateStep(idx) {
+    sections.forEach((s, i) => {
+      const pip = document.querySelector(`#${s.step} .step-pip`);
+      const lbl = document.querySelector(`#${s.step} .step-lbl`);
+      if (!pip) return;
+      pip.classList.remove('step-pip-active', 'step-pip-done');
+      lbl.classList.remove('step-lbl-active', 'step-lbl-done');
+      if (s.line) document.getElementById(s.line)?.classList.remove('step-line-done');
+      if (i < idx) {
+        pip.classList.add('step-pip-done');
+        lbl.classList.add('step-lbl-done');
+        if (s.line) document.getElementById(s.line)?.classList.add('step-line-done');
+      } else if (i === idx) {
+        pip.classList.add('step-pip-active');
+        lbl.classList.add('step-lbl-active');
+      }
+    });
+  }
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const idx = sections.findIndex(s => s.id === e.target.id);
+        if (idx >= 0) activateStep(idx);
+      }
+    });
+  }, { threshold: 0.25, rootMargin: '-80px 0px -40% 0px' });
+
+  sections.forEach(s => {
+    const el = document.getElementById(s.id);
+    if (el) obs.observe(el);
+  });
+
+  // ── AJAX facility dropdowns ──────────────────────────
   function buildOption(id, label) {
     const o = document.createElement("option");
     o.value = id; o.textContent = label;
     return o;
   }
 
-  // Set up one priority block: talukaEl drives facilityEl independently.
   function setupPriority(talukaEl, facilityEl) {
-    function fetchFacilities(talukaId, preserveValue) {
-      fetch(`/api/facilities/?taluka=${talukaId}`)
-        .then(r => r.json())
-        .then(({ facilities }) => {
-          facilityEl.innerHTML = "";
-          facilityEl.appendChild(buildOption("", "— Select facility —"));
-          facilities.forEach(f => {
-            const label = `${f.name} (${f.type}) — ${f.sanctioned_vacancies} vacancy`;
-            const opt = buildOption(f.id, label);
-            if (String(f.id) === preserveValue) opt.selected = true;
-            facilityEl.appendChild(opt);
-          });
-          facilityEl.disabled = false;
-        })
-        .catch(() => {
-          facilityEl.innerHTML = '<option value="">Could not load — try again</option>';
-        });
-    }
-
     talukaEl.addEventListener("change", function () {
       if (!this.value) {
         facilityEl.innerHTML = '<option value="">— Select facility —</option>';
         facilityEl.disabled = true;
         return;
       }
-      fetchFacilities(this.value, "");
+      facilityEl.innerHTML = '<option value="">Loading…</option>';
+      fetch(`/api/facilities/?taluka=${this.value}`)
+        .then(r => r.json())
+        .then(({ facilities }) => {
+          facilityEl.innerHTML = "";
+          facilityEl.appendChild(buildOption("", "— Select facility —"));
+          facilities.forEach(f => {
+            facilityEl.appendChild(
+              buildOption(f.id, `${f.name} (${f.type}) — ${f.sanctioned_vacancies} vacancy`)
+            );
+          });
+          facilityEl.disabled = false;
+        })
+        .catch(() => {
+          facilityEl.innerHTML = '<option value="">Could not load — try again</option>';
+        });
     });
 
-    // On validation-error reload the server renders options, so no fetch needed.
-    // Only disable the facility select if it has no options yet (fresh load).
-    if (!talukaEl.value) {
-      facilityEl.disabled = true;
-    }
+    if (!talukaEl.value) facilityEl.disabled = true;
   }
 
-  setupPriority(
-    document.getElementById("id_taluka_1"),
-    document.getElementById("id_priority_1")
-  );
-  setupPriority(
-    document.getElementById("id_taluka_2"),
-    document.getElementById("id_priority_2")
-  );
-  setupPriority(
-    document.getElementById("id_taluka_3"),
-    document.getElementById("id_priority_3")
-  );
+  setupPriority(document.getElementById("id_taluka_1"), document.getElementById("id_priority_1"));
+  setupPriority(document.getElementById("id_taluka_2"), document.getElementById("id_priority_2"));
+  setupPriority(document.getElementById("id_taluka_3"), document.getElementById("id_priority_3"));
 })();
 </script>
 {% endblock %}

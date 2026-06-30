@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Acknowledgement {{ applicant.reference_number }} — Doctor Placement Portal</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; font-size: 13px; color: #000; background: #fff; padding: 30px 40px; }
+
+    .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
+    .header h1 { font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: .04em; }
+    .header p  { font-size: 12px; color: #444; margin-top: 4px; }
+
+    .ref-box { border: 2px solid #000; text-align: center; padding: 12px 20px; margin: 20px 0; }
+    .ref-box .label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #555; }
+    .ref-box .ref   { font-size: 28px; font-weight: bold; letter-spacing: .05em; }
+
+    .body-text { line-height: 1.8; margin-bottom: 14px; }
+    .body-text strong { font-weight: bold; }
+
+    ol.prefs { margin: 10px 0 16px 20px; line-height: 2; }
+    ol.prefs li { margin-bottom: 2px; }
+    .badge { display: inline-block; background: #555; color: #fff; font-size: 10px;
+             padding: 1px 5px; border-radius: 3px; vertical-align: middle; margin: 0 2px; }
+
+    table.summary { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    table.summary th, table.summary td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; vertical-align: top; }
+    table.summary th { background: #f0f0f0; width: 35%; font-weight: bold; }
+
+    .section-title { font-weight: bold; font-size: 12px; text-transform: uppercase;
+                     letter-spacing: .06em; margin: 18px 0 6px; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
+
+    .footer { margin-top: 30px; font-size: 11px; color: #555; border-top: 1px solid #ccc; padding-top: 10px; text-align: center; }
+
+    .stamp-area { margin-top: 40px; display: flex; justify-content: space-between; }
+    .stamp-box  { text-align: center; font-size: 11px; }
+    .stamp-box .line { border-top: 1px solid #000; width: 180px; margin: 40px auto 4px; }
+
+    @media print {
+      body { padding: 10px 20px; }
+      .no-print { display: none; }
+      @page { margin: 15mm; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>District Health Office, Belagavi</h1>
+  <p>Acknowledgement of Application — CHC / PHC Doctor Placement 2026</p>
+</div>
+
+<div class="ref-box">
+  <div class="label">Reference Number</div>
+  <div class="ref">{{ applicant.reference_number }}</div>
+</div>
+
+<p class="body-text">
+  Dear <strong>Dr. {{ applicant.first_name }} {{ applicant.last_name }}</strong>,
+</p>
+<p class="body-text">
+  Your application for the appointment of
+  <strong>Dr. {{ applicant.first_name }} {{ applicant.father_name }} {{ applicant.last_name }}</strong>
+  at the following facilities in <strong>Belagavi District</strong>
+  has been <strong>successfully submitted</strong>:
+</p>
+
+<ol class="prefs">
+  {% for pref in applicant.preferences.all %}
+  <li>
+    <strong>{{ pref.facility.name }}</strong>
+    <span class="badge">{{ pref.facility.type }}</span>
+    &mdash; {{ pref.facility.taluka.name }} Taluka
+  </li>
+  {% endfor %}
+</ol>
+
+<p class="body-text">
+  Please retain this reference number. The DHO / CEO will use it to track and communicate the final posting decision.
+</p>
+
+<div class="section-title">Applicant Details</div>
+<table class="summary">
+  <tr><th>Full Name</th><td>Dr. {{ applicant.first_name }} {{ applicant.father_name }} {{ applicant.last_name }}</td></tr>
+  <tr><th>Date of Birth</th><td>{{ applicant.dob }}</td></tr>
+  <tr><th>Email</th><td>{{ applicant.email }}</td></tr>
+  <tr><th>Phone</th><td>{{ applicant.phone }}</td></tr>
+  <tr><th>UG Qualification</th><td>{{ applicant.ug_qualification }}</td></tr>
+  <tr><th>Score</th><td>{{ applicant.ug_score }} ({{ applicant.get_score_type_display }})</td></tr>
+  {% if applicant.higher_qualification %}
+  <tr><th>Higher Qualification</th><td>{{ applicant.higher_qualification }}</td></tr>
+  {% endif %}
+  <tr><th>Date of Submission</th><td>{{ applicant.created_at|date:"d F Y, h:i A" }} IST</td></tr>
+</table>
+
+<div class="section-title">Facility Preferences</div>
+<table class="summary">
+  <tr><th>Priority</th><th>Facility</th><th>Type</th><th>Taluka</th><th>Sanctioned Vacancies</th></tr>
+  {% for pref in applicant.preferences.all %}
+  <tr>
+    <td style="text-align:center; font-weight:bold;">{{ pref.priority }}</td>
+    <td>{{ pref.facility.name }}</td>
+    <td style="text-align:center;">{{ pref.facility.type }}</td>
+    <td>{{ pref.facility.taluka.name }}</td>
+    <td style="text-align:center;">{{ pref.facility.sanctioned_vacancies }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<div class="stamp-area">
+  <div class="stamp-box">
+    <div class="line"></div>
+    Signature of Applicant
+  </div>
+  <div class="stamp-box">
+    <div class="line"></div>
+    Office Seal &amp; Signature of DHO
+  </div>
+</div>
+
+<div class="footer">
+  This is a system-generated acknowledgement from the Doctor Placement Portal, District Health Office, Belagavi.
+  This document is valid only with the above reference number.
+</div>
+
+<script>
+  // Auto-trigger print dialog when this page opens.
+  window.addEventListener("load", function () { window.print(); });
+</script>
+</body>
+</html>
