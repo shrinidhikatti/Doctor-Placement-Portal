@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Doctor Placement Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <h1 class="h4 mb-0 me-auto">Placement Dashboard</h1>
+  <a href="/admin/portal/applicant/export/" class="btn btn-success btn-sm">
+    Download Excel
+  </a>
+</div>
+
+{# ── KPI strip ─────────────────────────────────────────────────────── #}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm h-100">
+      <div class="card-body py-4">
+        <div class="display-5 fw-bold text-primary">{{ total }}</div>
+        <div class="text-muted small mt-1">Total Applications</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm h-100">
+      <div class="card-body py-4">
+        <div class="display-5 fw-bold text-primary">{{ taluka_demand|length }}</div>
+        <div class="text-muted small mt-1">Talukas with Demand</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm h-100">
+      <div class="card-body py-4">
+        <div class="display-5 fw-bold text-primary">{{ facility_demand|length }}</div>
+        <div class="text-muted small mt-1">Facilities Chosen</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm h-100">
+      <div class="card-body py-4">
+        <div class="display-5 fw-bold text-primary">{{ by_qualification|length }}</div>
+        <div class="text-muted small mt-1">Qualifications Seen</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Charts row ────────────────────────────────────────────────────── #}
+<div class="row g-4 mb-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold">Priority-1 Demand by Taluka</div>
+      <div class="card-body">
+        <canvas id="talukaChart" height="240"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold">Applications by UG Qualification</div>
+      <div class="card-body">
+        <canvas id="qualChart" height="240"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if daily_labels_json != "[]" %}
+<div class="card shadow-sm mb-4">
+  <div class="card-header fw-semibold">Daily Applications</div>
+  <div class="card-body">
+    <canvas id="dailyChart" height="100"></canvas>
+  </div>
+</div>
+{% endif %}
+
+{# ── Facility demand table ─────────────────────────────────────────── #}
+<div class="card shadow-sm mb-4">
+  <div class="card-header fw-semibold">Demand per Facility (Priority breakdown vs Vacancies)</div>
+  {% if facility_demand %}
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Facility</th>
+          <th>Type</th>
+          <th>Taluka</th>
+          <th class="text-center">Vacancies</th>
+          <th class="text-center">P1</th>
+          <th class="text-center">P2</th>
+          <th class="text-center">P3</th>
+          <th class="text-center">P1 vs Vacancies</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in facility_demand %}
+        <tr>
+          <td>{{ f.name }}</td>
+          <td><span class="badge bg-secondary">{{ f.type }}</span></td>
+          <td>{{ f.taluka_name }}</td>
+          <td class="text-center">{{ f.sanctioned_vacancies }}</td>
+          <td class="text-center fw-semibold">{{ f.p1 }}</td>
+          <td class="text-center text-muted">{{ f.p2 }}</td>
+          <td class="text-center text-muted">{{ f.p3 }}</td>
+          <td class="text-center">
+            {% if f.p1 > f.sanctioned_vacancies %}
+              <span class="badge bg-danger">{{ f.p1 }} / {{ f.sanctioned_vacancies }}</span>
+            {% else %}
+              <span class="badge bg-success">{{ f.p1 }} / {{ f.sanctioned_vacancies }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="card-body text-muted">No applications received yet.</div>
+  {% endif %}
+</div>
+
+{# ── Taluka demand table ───────────────────────────────────────────── #}
+<div class="row g-4 mb-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold">Applications by Taluka (Priority 1)</div>
+      {% if taluka_demand %}
+      <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+          <thead class="table-light">
+            <tr><th>Taluka</th><th class="text-center">Applicants</th></tr>
+          </thead>
+          <tbody>
+            {% for t in taluka_demand %}
+            <tr>
+              <td>{{ t.name }}</td>
+              <td class="text-center fw-semibold">{{ t.count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="card-body text-muted">No applications yet.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold">Applications by UG Qualification</div>
+      {% if by_qualification %}
+      <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+          <thead class="table-light">
+            <tr><th>Qualification</th><th class="text-center">Applicants</th></tr>
+          </thead>
+          <tbody>
+            {% for q in by_qualification %}
+            <tr>
+              <td>{{ q.name }}</td>
+              <td class="text-center fw-semibold">{{ q.count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="card-body text-muted">No applications yet.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const BLUE   = "rgba(13,110,253,0.8)";
+const GREEN  = "rgba(25,135,84,0.8)";
+const COLORS = [
+  "#0d6efd","#198754","#fd7e14","#dc3545","#6f42c1",
+  "#20c997","#0dcaf0","#ffc107","#6c757d","#d63384"
+];
+
+const talukaLabels = {{ taluka_labels_json|safe }};
+const talukaCounts = {{ taluka_counts_json|safe }};
+const qualLabels   = {{ qual_labels_json|safe }};
+const qualCounts   = {{ qual_counts_json|safe }};
+const dailyLabels  = {{ daily_labels_json|safe }};
+const dailyCounts  = {{ daily_counts_json|safe }};
+
+if (talukaLabels.length) {
+  new Chart(document.getElementById("talukaChart"), {
+    type: "bar",
+    data: {
+      labels: talukaLabels,
+      datasets: [{ label: "Priority-1 applicants", data: talukaCounts,
+                   backgroundColor: BLUE, borderRadius: 4 }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+}
+
+if (qualLabels.length) {
+  new Chart(document.getElementById("qualChart"), {
+    type: "bar",
+    data: {
+      labels: qualLabels,
+      datasets: [{ label: "Applicants", data: qualCounts,
+                   backgroundColor: qualLabels.map((_, i) => COLORS[i % COLORS.length]),
+                   borderRadius: 4 }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+}
+
+if (dailyLabels.length) {
+  new Chart(document.getElementById("dailyChart"), {
+    type: "line",
+    data: {
+      labels: dailyLabels,
+      datasets: [{ label: "Applications", data: dailyCounts,
+                   borderColor: BLUE, backgroundColor: "rgba(13,110,253,0.1)",
+                   fill: true, tension: 0.3, pointRadius: 4 }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+}
+</script>
+{% endblock %}
