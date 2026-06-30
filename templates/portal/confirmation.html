@@ -8,18 +8,24 @@
     <div class="card-body p-4">
       <div class="text-center mb-3" style="font-size:2.5rem; color:#198754;">&#10003;</div>
 
-      {% with pref1=applicant.preferences.all.0 %}
       <p class="fs-6 mb-3">
         Dear <strong>Dr. {{ applicant.first_name }} {{ applicant.last_name }}</strong>,
       </p>
-      <p class="mb-4" style="line-height:1.7;">
+      <p class="mb-2" style="line-height:1.7;">
         Your application for the appointment of
         <strong>Dr. {{ applicant.first_name }} {{ applicant.father_name }} {{ applicant.last_name }}</strong>
-        at the
-        <strong>{{ pref1.facility.type }}s of {{ pref1.facility.taluka.name }} Taluka</strong>,
-        Belagavi District has been <span class="text-success fw-semibold">successfully submitted</span>.
+        at the following facilities in <strong>Belagavi District</strong>
+        has been <span class="text-success fw-semibold">successfully submitted</span>:
       </p>
-      {% endwith %}
+      <ol class="mb-4" style="line-height:2;">
+        {% for pref in applicant.preferences.all %}
+        <li>
+          <strong>{{ pref.facility.name }}</strong>
+          <span class="badge bg-secondary">{{ pref.facility.type }}</span>
+          &mdash; {{ pref.facility.taluka.name }} Taluka
+        </li>
+        {% endfor %}
+      </ol>
 
       <div class="alert alert-success text-center py-3 mb-2">
         <div class="text-muted" style="font-size:.75rem; letter-spacing:.08em; text-transform:uppercase;">Reference Number</div>
